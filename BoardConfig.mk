@@ -47,6 +47,9 @@ TARGET_BOARD_PLATFORM := kona
 # Bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(DEVICE_PATH)/bluetooth/include
 
+# HIDL
+DEVICE_MATRIX_FILE := $(DEVICE_PATH)/compatibility_matrix.xml
+
 # Init
 TARGET_INIT_VENDOR_LIB := //$(DEVICE_PATH):libinit_lmi
 TARGET_RECOVERY_DEVICE_MODULES := libinit_lmi
