@@ -44,6 +44,10 @@ TARGET_KERNEL_CONFIG := vendor/lmi_user_defconfig
 # Platform
 TARGET_BOARD_PLATFORM := kona
 
+# Init
+TARGET_INIT_VENDOR_LIB := //$(DEVICE_PATH):libinit_lmi
+TARGET_RECOVERY_DEVICE_MODULES := libinit_lmi
+
 # Metadata
 BOARD_USES_METADATA_PARTITION := true
 
