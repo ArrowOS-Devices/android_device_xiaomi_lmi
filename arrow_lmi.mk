@@ -15,12 +15,12 @@ $(call inherit-product, device/xiaomi/lmi/device.mk)
 $(call inherit-product, vendor/arrow/config/common.mk)
 
 # Device identifier. This must come after all inclusions.
-PRODUCT_NAME := arrow_lmi
+PRODUCT_NAME := havoc_lmi
 PRODUCT_DEVICE := lmi
 PRODUCT_BRAND := POCO
 PRODUCT_MODEL := POCO F2 Pro
 PRODUCT_MANUFACTURER := Xiaomi
-DEVICE_MAINTAINER := TH779, lamp216
+DEVICE_MAINTAINER := TH779, lamp216, kKsk
 
 PRODUCT_CHARACTERISTICS := nosdcard
 
