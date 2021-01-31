@@ -5,9 +5,9 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/arrow_lmi.mk
+    $(LOCAL_DIR)/havoc_lmi.mk
 
 COMMON_LUNCH_CHOICES := \
-    arrow_lmi-user \
-    arrow_lmi-userdebug \
-    arrow_lmi-eng
+    havoc_lmi-user \
+    havoc_lmi-userdebug \
+    havoc_lmi-eng
