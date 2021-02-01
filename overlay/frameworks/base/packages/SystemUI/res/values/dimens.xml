@@ -27,4 +27,7 @@
 
     <!-- the padding of the rounded corner -->
     <dimen name="rounded_corner_content_padding">8dp</dimen>
+
+    <!--  Allow CornerHandleView and PathSpecCornerPathRenderer to decouple from corner-radius -->
+    <dimen name="config_rounded_mask_size">122px</dimen>
 </resources>
