@@ -74,6 +74,9 @@ on boot
     chown system system /sys/class/leds/red/breath
     chown system system /sys/class/leds/red/brightness
 
+    # Touchpanel
+    chown system system /sys/touchpanel/double_tap
+
 on property:persist.vendor.sys.fp.fod.large_field=1
     write sys/bus/i2c/devices/3-0049/fod_area 1
 
