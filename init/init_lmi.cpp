@@ -4,54 +4,93 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <cstdlib>
+#include <fstream>
+#include <string.h>
+#include <unistd.h>
+#include <vector>
+
 #include <android-base/properties.h>
 #define _REALLY_INCLUDE_SYS__SYSTEM_PROPERTIES_H_
 #include <sys/_system_properties.h>
 
-#include "vendor_init.h"
 #include "property_service.h"
+#include "vendor_init.h"
 
-void property_override(char const prop[], char const value[]) {
+using android::base::GetProperty;
+using std::string;
+
+std::vector<std::string> ro_props_default_source_order = {
+    "",
+    "odm.",
+    "product.",
+    "system.",
+    "system_ext.",
+    "vendor.",
+};
+
+void property_override(char const prop[], char const value[], bool add = true) {
     prop_info *pi;
 
-    pi = (prop_info*) __system_property_find(prop);
-
+    pi = (prop_info *)__system_property_find(prop);
     if (pi)
         __system_property_update(pi, value, strlen(value));
-    else
+    else if (add)
         __system_property_add(prop, strlen(prop), value, strlen(value));
 }
 
-void load_lmi() {
-    property_override("ro.build.fingerprint", "Redmi/lmi/lmi:11/RKQ1.200826.002/V12.5.2.0.RJKCNXM:user/release-keys");
-    property_override("ro.product.brand", "Redmi");
-    property_override("ro.product.device", "lmi");
-    property_override("ro.product.model", "Redmi K30 Pro");
-}
+void set_device_props(const std::string fingerprint, const std::string description,
+        const std::string brand, const std::string device, const std::string model) {
+    const auto set_ro_build_prop = [](const std::string &source,
+                                      const std::string &prop,
+                                      const std::string &value) {
+        auto prop_name = "ro." + source + "build." + prop;
+        property_override(prop_name.c_str(), value.c_str(), false);
+    };
 
-void load_lmiglobal() {
-    property_override("ro.build.fingerprint", "POCO/lmi_global/lmi:11/RKQ1.200826.002/V12.5.1.0.RJKMIXM:user/release-keys");
-    property_override("ro.product.brand", "POCO");
-    property_override("ro.product.device", "lmi");
-    property_override("ro.product.model", "POCO F2 Pro");
-}
+    const auto set_ro_product_prop = [](const std::string &source,
+                                        const std::string &prop,
+                                        const std::string &value) {
+        auto prop_name = "ro.product." + source + prop;
+        property_override(prop_name.c_str(), value.c_str(), false);
+    };
 
-void load_lmipro() {
-    property_override("ro.build.fingerprint", "Redmi/lmipro/lmipro:11/RKQ1.200826.002/V12.5.2.0.RJKCNXM:user/release-keys");
-    property_override("ro.product.brand", "Redmi");
-    property_override("ro.product.device", "lmipro");
-    property_override("ro.product.model", "Redmi K30 Pro Zoom Edition");
+    for (const auto &source : ro_props_default_source_order) {
+        set_ro_build_prop(source, "fingerprint", fingerprint);
+        set_ro_product_prop(source, "brand", brand);
+        set_ro_product_prop(source, "device", device);
+        set_ro_product_prop(source, "model", model);
+    }
+
+    property_override("ro.build.fingerprint", fingerprint.c_str());
+    property_override("ro.build.description", description.c_str());
+    property_override("ro.bootimage.build.fingerprint", fingerprint.c_str());
+    property_override("ro.system_ext.build.fingerprint", fingerprint.c_str());
 }
 
 void vendor_load_properties() {
-    std::string region = android::base::GetProperty("ro.boot.hwc", "");
-    std::string product = android::base::GetProperty("ro.boot.product.hardware.sku", "");
+    char const fp[] = "Redmi/lmi/lmi:11/RKQ1.200826.002/V12.5.2.0.RJKCNXM:user/release-keys";
+    char const fp_desc[] = "lmi-user 11 RKQ1.200826.002 V12.5.2.0.RJKCNXM release-keys";
 
-    if (region.find("CN") != std::string::npos)
-        if (product.find("pro") != std::string::npos)
-            load_lmipro();
-        else if (product.find("std") != std::string::npos)
-            load_lmi();
-    else if (region.find("GLOBAL") != std::string::npos)
-        load_lmiglobal();
+    string region = android::base::GetProperty("ro.boot.hwc", "");
+    string product = android::base::GetProperty("ro.boot.product.hardware.sku", "");
+
+    if (region == "CN") {
+        if (product == "pro") {
+            set_device_props(
+                fp,
+                fp_desc,
+                "Redmi", "lmipro", "Redmi K30 Pro Zoom Edition");
+        } else {
+            set_device_props(
+                fp,
+                fp_desc,
+                "Redmi", "lmi", "Redmi K30 Pro");
+        }
+    } else {
+        set_device_props(
+            fp,
+            fp_desc,
+            "POCO", "lmi", "POCO F2 Pro");
+    }
 }
