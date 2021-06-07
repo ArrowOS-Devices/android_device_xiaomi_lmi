@@ -162,7 +162,8 @@ PRODUCT_PACKAGES += \
     libgui_vendor \
     Snap \
     vendor.qti.hardware.camera.device@1.0.vendor \
-    vendor.qti.hardware.camera.postproc@1.0.vendor
+    vendor.qti.hardware.camera.postproc@1.0.vendor \
+    vendor.xiaomi.hardware.motor@1.0.vendor
 
 # Component overrides
 PRODUCT_COPY_FILES += \
