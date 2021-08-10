@@ -74,6 +74,8 @@ on boot
     chown system system /sys/class/leds/red/breath
     chown system system /sys/class/leds/red/brightness
 
+    chown system system /sys/class/thermal/thermal_message/sconfig
+
     # Touchpanel
     chown system system /sys/touchpanel/double_tap
 
