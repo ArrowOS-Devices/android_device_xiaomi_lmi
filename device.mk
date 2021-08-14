@@ -120,6 +120,8 @@ PRODUCT_PACKAGES += \
 
 # Init scripts
 PRODUCT_PACKAGES += \
+    fstab.qcom \
+    fstab.ramdisk \
     init.class_main.sh \
     init.mdm.sh \
     init.qcom.class_core.sh \
