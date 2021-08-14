@@ -1,0 +1,89 @@
+# Copyright (c) 2016, 2018, The Linux Foundation. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of The Linux Foundation nor
+#       the names of its contributors may be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+on early-init
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules audio_cs35l41 audio_tfa98xx
+
+on fs
+    mkdir /mnt/vendor/persist/audio 0755 system system
+
+    chmod 644 /mnt/vendor/persist/audio/us_manual_cal
+
+on init
+    chown system camera /dev/ti-drv8846
+    chown system camera /dev/akm09970
+    chmod 0660 /dev/ti-drv8846
+    chmod 0660 /dev/akm09970
+
+    # Mipi Display feature
+    chmod 0777 /sys/devices/platform/soc/soc:qcom,dsi-display-primary/dynamic_dsi_clock
+
+on post-fs-data
+    mkdir /data/vendor/mac_addr 0770 system wifi
+    mkdir /data/vendor/nfc 0770 nfc nfc
+
+    chmod 0644 /dev/elliptic0
+    chmod 0644 /dev/elliptic1
+
+    chown system system /dev/ir_spi
+    chmod 0660 /dev/ir_spi
+
+on boot
+    chown system system /sys/class/touch/touch_dev/palm_sensor
+
+    chown system system /sys/class/drm/card0-DSI-1/panel_info
+    chmod 0444 /sys/class/drm/card0-DSI-1/panel_info
+
+    # Create persist for camera calibration data
+    mkdir /mnt/vendor/persist/camera 0755 system cameraserver
+
+    chown system system /sys/class/leds/blue-right/breath
+    chown system system /sys/class/leds/blue-right/brightness
+    chown system system /sys/class/leds/blue/breath
+    chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/green-right/breath
+    chown system system /sys/class/leds/green-right/brightness
+    chown system system /sys/class/leds/green/breath
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/red-right/breath
+    chown system system /sys/class/leds/red-right/brightness
+    chown system system /sys/class/leds/red/breath
+    chown system system /sys/class/leds/red/brightness
+
+on property:persist.vendor.sys.fp.fod.large_field=1
+    write sys/bus/i2c/devices/3-0049/fod_area 1
+
+service vendor.motor /vendor/bin/hw/vendor.xiaomi.hardware.motor@1.0-service
+    class hal
+    user system
+    group system
+
+service vendor.nv_mac /vendor/bin/nv_mac
+    class late_start
+    user system
+    group system inet net_admin wifi net_raw
+    oneshot
