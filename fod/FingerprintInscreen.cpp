@@ -33,6 +33,9 @@
 #define PARAM_NIT_FOD 1
 #define PARAM_NIT_NONE 0
 
+#define DISPPARAM_PATH "/sys/devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/card0-DSI-1/disp_param"
+#define DISPPARAM_FOD_HBM_OFF "0xE0000"
+
 #define TOUCH_FOD_ENABLE 10
 
 #define FOD_UI_PATH "/sys/devices/platform/soc/soc:qcom,dsi-display-primary/fod_ui"
@@ -42,6 +45,12 @@
 #define FOD_SENSOR_SIZE 202
 
 namespace {
+
+template <typename T>
+static void set(const std::string& path, const T& value) {
+    std::ofstream file(path);
+    file << value;
+}
 
 static bool readBool(int fd) {
     char c;
@@ -127,6 +136,7 @@ Return<void> FingerprintInscreen::onPress() {
 }
 
 Return<void> FingerprintInscreen::onRelease() {
+    set(DISPPARAM_PATH, DISPPARAM_FOD_HBM_OFF);
     return Void();
 }
 
