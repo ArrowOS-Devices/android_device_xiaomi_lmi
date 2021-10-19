@@ -445,6 +445,7 @@ void BiometricsFingerprint::notify(const fingerprint_msg_t* msg) {
                          .isOk()) {
                     ALOGE("failed to invoke fingerprint onAuthenticated callback");
                 }
+                getInstance()->onFingerUp();
             } else {
                 // Not a recognized fingerprint
                 if (!thisPtr->mClientCallback
