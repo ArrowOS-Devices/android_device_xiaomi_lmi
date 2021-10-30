@@ -57,9 +57,6 @@ public:
 private:
     sp<ITouchFeature> xiaomiTouchFeatureService;
     sp<IXiaomiFingerprint> xiaomiFingerprintService;
-
-    std::mutex mCallbackLock;
-    sp<IFingerprintInscreenCallback> mCallback;
 };
 
 }  // namespace implementation
