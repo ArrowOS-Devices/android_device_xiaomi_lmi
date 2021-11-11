@@ -25,6 +25,7 @@
 #include <hidl/Status.h>
 #include <log/log.h>
 #include <vendor/xiaomi/hardware/fingerprintextension/1.0/IXiaomiFingerprint.h>
+#include <vendor/xiaomi/hardware/touchfeature/1.0/ITouchFeature.h>
 
 #include "fingerprint.h"
 
@@ -47,8 +48,10 @@ using ::android::hardware::biometrics::fingerprint::V2_1::RequestStatus;
 using ::android::hardware::biometrics::fingerprint::V2_3::IBiometricsFingerprint;
 
 using ::vendor::xiaomi::hardware::fingerprintextension::V1_0::IXiaomiFingerprint;
+using ::vendor::xiaomi::hardware::touchfeature::V1_0::ITouchFeature;
 
 struct BiometricsFingerprint : public IBiometricsFingerprint, public IXiaomiFingerprint {
+public:
     BiometricsFingerprint();
     ~BiometricsFingerprint();
 
@@ -89,6 +92,9 @@ struct BiometricsFingerprint : public IBiometricsFingerprint, public IXiaomiFing
     Return<bool> isUdfps(uint32_t sensorId) override;
     Return<void> onFingerDown(uint32_t x, uint32_t y, float minor, float major) override;
     Return<void> onFingerUp() override;
+
+private:
+    sp<ITouchFeature> xiaomiTouchFeatureService;
 };
 
 }  // namespace implementation

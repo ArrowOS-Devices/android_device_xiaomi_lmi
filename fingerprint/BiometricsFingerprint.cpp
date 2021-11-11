@@ -24,7 +24,51 @@
 #include <hardware/hardware.h>
 #include <hardware/hw_auth_token.h>
 #include <inttypes.h>
+#include <poll.h>
 #include <unistd.h>
+
+#include <fstream>
+#include <thread>
+
+#define COMMAND_NIT 10
+#define PARAM_NIT_FOD 1
+#define PARAM_NIT_NONE 0
+
+#define DISPPARAM_PATH "/sys/devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/card0-DSI-1/disp_param"
+#define DISPPARAM_FOD_HBM_OFF "0xE0000"
+
+#define TOUCH_FOD_ENABLE 10
+
+#define FOD_UI_PATH "/sys/devices/platform/soc/soc:qcom,dsi-display-primary/fod_ui"
+
+namespace {
+
+template <typename T>
+static void set(const std::string& path, const T& value) {
+    std::ofstream file(path);
+    file << value;
+}
+
+static bool readBool(int fd) {
+    char c;
+    int rc;
+
+    rc = lseek(fd, 0, SEEK_SET);
+    if (rc) {
+        ALOGE("failed to seek fd, err: %d", rc);
+        return false;
+    }
+
+    rc = read(fd, &c, sizeof(char));
+    if (rc != 1) {
+        ALOGE("failed to read bool from fd, err: %d", rc);
+        return false;
+    }
+
+    return c != '0';
+}
+
+} // anonymous namespace
 
 namespace android {
 namespace hardware {
@@ -46,6 +90,32 @@ BiometricsFingerprint::BiometricsFingerprint() : mClientCallback(nullptr), mDevi
     if (!mDevice) {
         ALOGE("Can't open HAL module");
     }
+
+    xiaomiTouchFeatureService = ITouchFeature::getService();
+
+    std::thread([this]() {
+        int fd = open(FOD_UI_PATH, O_RDONLY);
+        if (fd < 0) {
+            ALOGE("failed to open fd, err: %d", fd);
+            return;
+        }
+
+        struct pollfd fodUiPoll = {
+            .fd = fd,
+            .events = POLLERR | POLLPRI,
+            .revents = 0,
+        };
+
+        while (true) {
+            int rc = poll(&fodUiPoll, 1, -1);
+            if (rc < 0) {
+                ALOGE("failed to poll fd, err: %d", rc);
+                continue;
+            }
+
+            mDevice->extCmd(mDevice, COMMAND_NIT, readBool(fd) ? PARAM_NIT_FOD : PARAM_NIT_NONE);
+        }
+    }).detach();
 }
 
 BiometricsFingerprint::~BiometricsFingerprint() {
@@ -170,11 +240,13 @@ Return<uint64_t> BiometricsFingerprint::preEnroll() {
 
 Return<RequestStatus> BiometricsFingerprint::enroll(const hidl_array<uint8_t, 69>& hat,
                                                     uint32_t gid, uint32_t timeoutSec) {
+    xiaomiTouchFeatureService->setTouchMode(TOUCH_FOD_ENABLE, 1);
     const hw_auth_token_t* authToken = reinterpret_cast<const hw_auth_token_t*>(hat.data());
     return ErrorFilter(mDevice->enroll(mDevice, authToken, gid, timeoutSec));
 }
 
 Return<RequestStatus> BiometricsFingerprint::postEnroll() {
+    xiaomiTouchFeatureService->resetTouchMode(TOUCH_FOD_ENABLE);
     return ErrorFilter(mDevice->post_enroll(mDevice));
 }
 
@@ -183,6 +255,7 @@ Return<uint64_t> BiometricsFingerprint::getAuthenticatorId() {
 }
 
 Return<RequestStatus> BiometricsFingerprint::cancel() {
+    xiaomiTouchFeatureService->resetTouchMode(TOUCH_FOD_ENABLE);
     return ErrorFilter(mDevice->cancel(mDevice));
 }
 
@@ -214,6 +287,7 @@ Return<RequestStatus> BiometricsFingerprint::setActiveGroup(uint32_t gid,
 }
 
 Return<RequestStatus> BiometricsFingerprint::authenticate(uint64_t operationId, uint32_t gid) {
+    xiaomiTouchFeatureService->setTouchMode(TOUCH_FOD_ENABLE, 1);
     return ErrorFilter(mDevice->authenticate(mDevice, operationId, gid));
 }
 
@@ -409,6 +483,7 @@ Return<void> BiometricsFingerprint::onFingerDown(uint32_t /* x */, uint32_t /* y
 }
 
 Return<void> BiometricsFingerprint::onFingerUp() {
+    set(DISPPARAM_PATH, DISPPARAM_FOD_HBM_OFF);
     return Void();
 }
 
