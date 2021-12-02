@@ -22,6 +22,14 @@
     <string name="popup_title">Front camera settings</string>
     <string name="popup_led_title">Camera LED</string>
     <string name="popup_led_summary">Enable LED light while the front camera appears and retracts</string>
+    <string name="popup_led_color_title">LED color</string>
+    <string name="popup_led_color_blue">Blue</string>
+    <string name="popup_led_color_green">Green</string>
+    <string name="popup_led_color_cyan">Cyan</string>
+    <string name="popup_led_color_red">Red</string>
+    <string name="popup_led_color_purple">Purple</string>
+    <string name="popup_led_color_yellow">Yellow</string>
+    <string name="popup_led_color_white">White</string>
     <string name="popup_sound_title">Sound effects</string>
     <string name="popup_sound_muqin">Xylophone</string>
     <string name="popup_sound_yingyan">Condor</string>
